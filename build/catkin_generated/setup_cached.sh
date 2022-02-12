@@ -7,8 +7,4 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH='/home/adiel/catkin_ws/devel:/opt/ros/melodic'
-export LD_LIBRARY_PATH='/home/adiel/catkin_ws/devel/lib:/opt/ros/melodic/lib'
-export PKG_CONFIG_PATH='/home/adiel/catkin_ws/devel/lib/pkgconfig:/opt/ros/melodic/lib/pkgconfig'
 export PWD='/home/adiel/catkin_ws/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/home/adiel/catkin_ws/devel/share/common-lisp'

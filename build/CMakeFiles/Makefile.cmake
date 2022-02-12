@@ -10,6 +10,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.10.2/CMakeCCompiler.cmake"
   "CMakeFiles/3.10.2/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.10.2/CMakeSystem.cmake"
+  "assignment1-BK/catkin_generated/ordered_paths.cmake"
+  "assignment1-BK/catkin_generated/package.cmake"
   "assignment1/catkin_generated/ordered_paths.cmake"
   "assignment1/catkin_generated/package.cmake"
   "beginner_tutorials/catkin_generated/ordered_paths.cmake"
@@ -18,6 +20,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "catkin_generated/installspace/_setup_util.py"
   "catkin_generated/order_packages.cmake"
   "/home/adiel/catkin_ws/src/CMakeLists.txt"
+  "/home/adiel/catkin_ws/src/assignment1-BK/CMakeLists.txt"
+  "/home/adiel/catkin_ws/src/assignment1-BK/package.xml"
   "/home/adiel/catkin_ws/src/assignment1/CMakeLists.txt"
   "/home/adiel/catkin_ws/src/assignment1/package.xml"
   "/home/adiel/catkin_ws/src/beginner_tutorials/CMakeLists.txt"
@@ -179,6 +183,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "gtest/googlemock/CMakeFiles/CMakeDirectoryInformation.cmake"
   "gtest/googlemock/gtest/CMakeFiles/CMakeDirectoryInformation.cmake"
   "assignment1/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "assignment1-BK/CMakeFiles/CMakeDirectoryInformation.cmake"
   "beginner_tutorials/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 

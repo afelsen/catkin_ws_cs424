@@ -917,6 +917,24 @@ clean: assignment1/CMakeFiles/std_msgs_generate_messages_py.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory assignment1-BK
+
+# Convenience name for "all" pass in the directory.
+assignment1-BK/all:
+
+.PHONY : assignment1-BK/all
+
+# Convenience name for "clean" pass in the directory.
+assignment1-BK/clean:
+
+.PHONY : assignment1-BK/clean
+
+# Convenience name for "preinstall" pass in the directory.
+assignment1-BK/preinstall:
+
+.PHONY : assignment1-BK/preinstall
+
+#=============================================================================
 # Directory level rules for directory beginner_tutorials
 
 # Convenience name for "all" pass in the directory.
