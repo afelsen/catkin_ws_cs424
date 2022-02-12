@@ -17,18 +17,23 @@ class Draw_Name():
 
     def draw(self):
         # Draws the B
-        self.rotate(120)
+        self.rotate(100)
         self.move_forward(8)
+
+        # At Top of the B
         self.rotate(90, -1)
         self.move_forward(2)
         self.rotate(115, -1)
         self.move_forward(3)
-        self.rotate(90)
+
+        # At Middle of the B
+        self.rotate(75)
         self.move_forward(4)
-        self.rotate(45, -1)
+        self.rotate(90, -1)
         self.move_forward(3)
 
-        self.rotate(180)
+        # Moving From B to K
+        self.rotate(120)
         self.move_forward(4)
 
         self.rotate(90)
