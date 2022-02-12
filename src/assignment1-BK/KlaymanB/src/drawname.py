@@ -3,7 +3,7 @@ import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.srv import TeleportAbsolute
 from turtlesim.srv import SetPen
-PI = 3.141592653589
+PI = 3.1415926535897932384626433832795028841971693
 
 class Draw_Name():
     def __init__(self):
@@ -16,30 +16,16 @@ class Draw_Name():
         self.reset_vel_msg()
 
     def draw(self):
-        self.rotate(75)
+        # Draws the B
+        self.rotate(90)
         self.move_forward(8)
-        self.rotate(150, -1)
-        self.move_forward(8)
-        self.rotate(150, -1)
-        self.move_forward(5)
-
-        #From the A to the F
-        self.rotate(100, -1)
-        self.move_forward(5)
-
-        #drawing the F
-        self.rotate(15, -1)
-        self.move_forward(3)
-        self.rotate(180)
+        self.rotate(90, -1)
+        self.move_forward(2)
+        self.rotate(135, -1)
         self.move_forward(3)
         self.rotate(90)
         self.move_forward(3)
-        self.rotate(90)
-        self.move_forward(3)
-        self.rotate(180)
-        self.move_forward(3)
-        self.rotate(90)
-        self.move_forward(3)
+        
 
     def move_forward(self, distance):
         self.vel_msg.linear.x = abs(self.speed)
@@ -91,7 +77,7 @@ def set_to_bottomleft():
 
     pen_service(0,0,0,0,1)
     teleport_service(1,2,0)
-    pen_service(255,0,0,0,0)
+    pen_service(0,0,255,0,0)
 
 
 if __name__ == "__main__":
