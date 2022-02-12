@@ -17,15 +17,31 @@ class Draw_Name():
 
     def draw(self):
         # Draws the B
-        self.rotate(90)
+        self.rotate(120)
         self.move_forward(8)
         self.rotate(90, -1)
         self.move_forward(2)
-        self.rotate(135, -1)
+        self.rotate(115, -1)
         self.move_forward(3)
         self.rotate(90)
+        self.move_forward(4)
+        self.rotate(45, -1)
         self.move_forward(3)
-        
+
+        self.rotate(180)
+        self.move_forward(4)
+
+        self.rotate(90)
+        self.move_forward(8)
+        self.rotate(180)
+        self.move_forward(4)
+        self.rotate(45)
+        self.move_forward(3)
+        self.rotate(180)
+        self.move_forward(3)
+        self.rotate(90, -1)
+        self.move_forward(3)
+
 
     def move_forward(self, distance):
         self.vel_msg.linear.x = abs(self.speed)
