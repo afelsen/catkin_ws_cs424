@@ -1,8 +1,0 @@
-prefix=/home/adiel/catkin_ws/install
-
-Name: assignment1
-Description: Description of assignment1
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
