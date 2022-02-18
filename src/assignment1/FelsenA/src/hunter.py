@@ -11,6 +11,7 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 from turtlesim.msg import Pose
 
+
 class Hunter:
     def __init__(self):
         rospy.wait_for_service('/spawn')
@@ -33,16 +34,13 @@ class Hunter:
 
         self.runner_pose = Pose(1, 1, 0, 0, 0)
 
-        self.max_angular_velocity = 5
+        self.max_angular_velocity = 2
 
     def get_desired_angle(self):
         x_dist = self.hunter_pose.x - self.runner_pose.x
         y_dist = self.hunter_pose.y - self.runner_pose.y
         angle = math.atan2(y_dist, x_dist)  # Comes in radians
         return angle      
-
-    def runner_hunter_distance(self):
-        return math.sqrt((self.hunter_pose.x - self.runner_pose.x) ** 2 + (self.hunter_pose.y - self.runner_pose.y) ** 2)
 
     def chase(self):
         while True:
@@ -62,9 +60,6 @@ class Hunter:
         
             self.vel_msg.angular.z = direction * angular_velocity_magnitude * self.max_angular_velocity
             self.velocity_publisher.publish(self.vel_msg)
-            
-            if self.runner_hunter_distance() < 1:
-                self.kill_publisher.publish(True)
 
 
     def update_hunter_pose(self, coord):
