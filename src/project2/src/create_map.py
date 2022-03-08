@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import rospy
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistWithCovariance
 from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import Odometry
 import random
 import math
 import time
@@ -14,7 +16,7 @@ class MapBot:
 
         self.speed = .2
         self.angular_speed = .8
-        self.wall_range = 1.2
+        self.wall_range = 1
         self.far_wall_range = .8
         self.collision = .15
         self.buffer = .2
@@ -22,6 +24,8 @@ class MapBot:
 
         self.laser_scan_subsubscriber = rospy.Subscriber('/scan', LaserScan, self.update_laser_pos)
         self.ranges = [1] * 360
+
+        self.odom_subscriber = rospy.Subscriber('/odom', Odometry, self.update_odometry)
 
     def move_forward(self, distance, direction=1):
         self.vel_msg.linear.x = direction*abs(self.speed)
@@ -69,18 +73,28 @@ class MapBot:
     def update_laser_pos(self, lasers):
         self.ranges = lasers.ranges
 
+    def update_odometry(self, odom):
+        self.estimated_velocity = odom.twist.twist
+
 
     def get_unstuck(self):
-        self.move_forward(1, direction = -1)
-        self.rotate(90)
+        self.move_forward(.2, direction = -1)
+        self.rotate(90, random.choice([-1,1]))
+        self.move_forward(.2, direction = 1)
 
     def smart_roam2(self):
         state = 0
         self.move_into_wall()
+        stuck = False
+        stuck_time = rospy.Time.now().to_sec()
         while True:
             front = self.ranges[0]
             front_left = self.ranges[45]
             front_right = self.ranges[315]
+
+            front = min(self.ranges[0:5] + self.ranges[355:])
+            # front_left = min(self.ranges[35:55])
+            # front_right = min(self.ranges[305:325])
             #go forward-left if there is no wall in front and the bot is not only against the right wall
             if front > self.wall_range and (not (front_left > self.wall_range and front_right < self.wall_range)):
                 self.vel_msg.linear.x = self.speed/2.5
@@ -97,9 +111,17 @@ class MapBot:
 
             self.velocity_publisher.publish(self.vel_msg)
 
-            #unstuck
-            if front < self.collision:
+            #get the bot unstuck if it isn't moving forward but the velocity is positive
+            if self.vel_msg.linear.x > 0 and self.estimated_velocity.linear.x < 0.001 and not stuck:
+                stuck = True
+                stuck_time = rospy.Time.now().to_sec()
+            
+            if self.estimated_velocity.linear.x > 0.001:
+                stuck = False
+            #0.000266365161607
+            if stuck and rospy.Time.now().to_sec() - stuck_time > 1:
                 self.get_unstuck()
+                stuck = False
 
         
 
@@ -192,8 +214,8 @@ class MapBot:
     def fix_collision(self):
         self.move_forward(.2, -1)
         self.stop_bot()
-        self.rotate(90, -1)
-        self.stop_bot()
+        # self.rotate(90, -1)
+        # self.stop_bot()
 
     
 
