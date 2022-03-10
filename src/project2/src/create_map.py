@@ -2,11 +2,14 @@
 import rospy
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistWithCovariance
+from geometry_msgs.msg import PoseWithCovariance
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 import random
 import math
 import time
+
+from tf.transformations import euler_from_quaternion
 
 class MapBot:
     def __init__(self):
@@ -75,7 +78,8 @@ class MapBot:
 
     def update_odometry(self, odom):
         self.estimated_velocity = odom.twist.twist
-
+        self.estimated_position = odom.pose.pose.position
+        self.estimated_angle = odom.pose.pose.orientation
 
     def get_unstuck(self):
         self.move_forward(.2, direction = -1)
@@ -87,12 +91,17 @@ class MapBot:
         self.move_into_wall()
         stuck = False
         stuck_time = rospy.Time.now().to_sec()
+        prev_pose = None
+        prev_angle = None
+
         while True:
             front = self.ranges[0]
             front_left = self.ranges[45]
             front_right = self.ranges[315]
 
             front = min(self.ranges[0:5] + self.ranges[355:])
+
+
             # front_left = min(self.ranges[35:55])
             # front_right = min(self.ranges[305:325])
             #go forward-left if there is no wall in front and the bot is not only against the right wall
@@ -103,7 +112,6 @@ class MapBot:
             elif front > self.wall_range and front_left > self.wall_range and front_right < self.wall_range:
                 self.vel_msg.linear.x = self.speed
                 self.vel_msg.angular.z = 0
-            
             #Otherwise, turn left
             else:
                 self.vel_msg.linear.x = 0
@@ -111,56 +119,33 @@ class MapBot:
 
             self.velocity_publisher.publish(self.vel_msg)
 
-            #get the bot unstuck if it isn't moving forward but the velocity is positive
-            if self.vel_msg.linear.x > 0 and self.estimated_velocity.linear.x < 0.001 and not stuck:
-                stuck = True
-                stuck_time = rospy.Time.now().to_sec()
+            #get the bot unstuck if it isn't moving
+            # if self.vel_msg.linear.x > 0 and self.estimated_velocity.linear.x < 0.05 and not stuck:
+            #     stuck = True
+            #     stuck_time = rospy.Time.now().to_sec()
             
-            if self.estimated_velocity.linear.x > 0.001:
+            # if self.estimated_velocity.linear.x > 0.01:
+            #     stuck = False
+            # #0.000266365161607
+            # if stuck and rospy.Time.now().to_sec() - stuck_time > 2:
+            #     self.get_unstuck()
+            #     stuck = False
+
+
+            if prev_pose and prev_angle and abs(self.estimated_position.x - prev_pose.x) < .1 and abs(self.estimated_position.y - prev_pose.y) < .02\
+                and abs(self.estimated_angle.w - prev_angle.w) < .1:
+                if not stuck:
+                    stuck = True
+                    stuck_time = rospy.Time.now().to_sec()
+            else:
                 stuck = False
-            #0.000266365161607
-            if stuck and rospy.Time.now().to_sec() - stuck_time > 1:
+                prev_pose = self.estimated_position
+                prev_angle = self.estimated_angle
+            if stuck and rospy.Time.now().to_sec() - stuck_time > 3:
                 self.get_unstuck()
                 stuck = False
 
         
-
-    def smart_roam(self):
-        # self.ranges at .3 or less means it is at a wall
-        self.move_into_wall()
-        while True:
-            if min(self.ranges[0:45] + self.ranges[315:]) < self.collision:
-                print("Collision!")
-                self.stop_bot()
-                self.fix_collision()
-                self.stop_bot()
-            
-            elif self.ranges[0] < self.wall_range:
-                print("Wall ahead!")
-                self.stop_bot()
-                self.rotate_out_of_wall()
-                self.stop_bot()
-            
-            elif self.ranges[315] > self.far_wall_range:
-                print("No Right Wall")
-                self.stop_bot()
-                self.move_forward(.3)
-                self.rotate(90, direction = -1)
-                self.move_forward(.3)
-                self.stop_bot()
-            
-            elif max(self.ranges[225:315]) > self.wall_range + self.buffer:
-                print("Rotating away from Right Wall")
-                self.stop_bot()
-                self.rotate_towards_wall()
-                self.stop_bot()
-            
-            
-            
-            
-            self.vel_msg.linear.x = self.speed
-            self.velocity_publisher.publish(self.vel_msg)
-
     def move_into_wall(self):
         self.vel_msg.linear.x = abs(self.speed)
 
@@ -176,48 +161,12 @@ class MapBot:
 
         self.velocity_publisher.publish(self.vel_msg)
 
-    def rotate_towards_wall(self):
-        self.vel_msg.angular.z = self.angular_speed*-1
-        self.vel_msg.linear.x = 0
-
-        minimum = min(self.ranges)
-
-        #Rotate until roughly parallel with wall
-        while abs(self.ranges[299] - self.ranges[239]) > .02:
-            self.velocity_publisher.publish(self.vel_msg)
-
-        self.vel_msg.linear.z = 0
-        self.velocity_publisher.publish(self.vel_msg)
-
     def stop_bot(self):
         self.vel_msg.linear.x = 0
         self.vel_msg.angular.z = 0
         self.velocity_publisher.publish(self.vel_msg)
         time.sleep(1)
 
-    def rotate_out_of_wall(self):
-        # front_dist = self.ranges[0]
-        self.vel_msg.angular.z = self.angular_speed
-        self.vel_msg.linear.x = 0
-
-        #Rotate until roughly parallel with wall
-        while abs(self.ranges[299] - self.ranges[239]) > .02:
-            self.velocity_publisher.publish(self.vel_msg)
-
-        #rotate an extra few degrees
-        self.rotate(5)
-
-        self.vel_msg.linear.z = 0
-        self.velocity_publisher.publish(self.vel_msg)
-        # self.rotate(90, direction=1)
-    
-    def fix_collision(self):
-        self.move_forward(.2, -1)
-        self.stop_bot()
-        # self.rotate(90, -1)
-        # self.stop_bot()
-
-    
 
  
 if __name__ == "__main__":
