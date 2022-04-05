@@ -14,6 +14,8 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(512, 128)
         self.fc3 = nn.Linear(128, out)
 
+        self.softmax = Softmax(dim=1)
+
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
@@ -21,4 +23,5 @@ class CNN(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
+        # x = self.softmax(x)
         return x

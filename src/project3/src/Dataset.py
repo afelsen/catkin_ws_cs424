@@ -6,16 +6,17 @@ from PIL import Image
 import random 
 
 class Fruit_Dataset(Dataset):
-    def __init__(self, train=False, transform = None):
-        self.transform = transform
+    def __init__(self, train=False, watermelon_transform = None, other_transform = None):
+        self.watermelon_transform = watermelon_transform
+        self.other_transform = other_transform
         self.data = []
 
         data_dict = {}
         self.classes = ["watermelon", "grapes", "pineapple"]
-        self.labels = [0, 1, 2]
+        self.labels = [0, 1, 1]
         for name, label in zip(self.classes, self.labels):
             data_dict[name] = []
-            for file in glob.glob("./data/" + name +"/*.jpg"):
+            for file in glob.glob("./data/" + name +"/*.*"):
                 image = cv2.imread(file)
                 image = cv2.resize(image, (64,64))
                 
@@ -34,13 +35,21 @@ class Fruit_Dataset(Dataset):
     
     def __getitem__(self, idx):
         img = self.data[idx][0]
-        if self.transform:
+        if self.watermelon_transform and self.other_transform:
+            
             img = Image.fromarray(img)
 
-            img = self.transform(img)
+            if self.data[idx][1] == 0:
+                img = self.watermelon_transform(img)
+            else:
+                img = self.other_transform(img)
             img = img.permute(1,2,0)
 
             img = np.array(img)
+
+
+            # cv2.imshow("test", img)
+            # cv2.waitKey(0)
         else:
             pass
             # img = img[..., np.newaxis]

@@ -1,11 +1,12 @@
 import torch
 import torch.optim as optim
 from torchvision import transforms
+from torch.nn import Softmax
 
 from Dataset import Fruit_Dataset
 from NN import CNN
 
-NUM_EPOCHS = 100
+NUM_EPOCHS = 500
 MODEL_PATH = "./models/model.py"
 BATCH_SIZE = 4
 
@@ -44,7 +45,7 @@ def train(net, trainloader, device):
     print('Finished Training')
 
 def test(net, testloader, device):
-    checkpoint = torch.load(MODEL_PATH)
+    checkpoint = torch.load(MODEL_PATH, map_location=torch.device('cpu'))
     net.load_state_dict(checkpoint['model_state_dict'])
 
     total = 0
@@ -57,9 +58,12 @@ def test(net, testloader, device):
 
         outputs = net(inputs)
 
-
+        print(outputs)
+        
         for i in range(len(outputs)):
-            if torch.argmax(outputs[i]) == labels[i]:
+            if torch.argmax(outputs[i]) == 0 and labels[i] == 0:
+                correct += 1
+            elif torch.argmax(outputs[i]) != 0 and labels[i] != 0:
                 correct += 1
             total += 1
 
@@ -67,24 +71,35 @@ def test(net, testloader, device):
 
 
 if __name__ == "__main__":
-    transform_data = transforms.Compose([
+    transform_watermelon = transforms.Compose([
         transforms.RandomHorizontalFlip(),
-        # transforms.RandomVerticalFlip(),
-        #transforms.RandomResizedCrop(556, scale=(0.7, 1.0), ratio=(0.75, 1.3333333333333333), interpolation=2),
-        # transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation = 0.1),
+        transforms.RandomResizedCrop(64, scale=(0.08, 1.0), ratio=(0.5, 1.5), interpolation=2),
+        transforms.ColorJitter(brightness=.5, contrast=.5, saturation = .5),
+        # transforms.RandomInvert(),
+        transforms.RandomPerspective(distortion_scale=0.6, p=1.0),
         transforms.ToTensor(),
     ])
 
-    net = CNN(3)
+    transform_others = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomResizedCrop(64, scale=(0.08, 1.0), ratio=(0.2, 2), interpolation=2),
+        transforms.ColorJitter(brightness=1, contrast=1, saturation = 1),
+        # transforms.RandomInvert(),
+        transforms.RandomPerspective(distortion_scale=0.6, p=.5),
+        transforms.ToTensor(),
+    ])
+
+    net = CNN(2)
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("Training device: ", device)
     net.to(device)
 
-    # train_data = Fruit_Dataset(train = True, transform = transform_data)
-    # trainloader = torch.utils.data.DataLoader(train_data, batch_size = BATCH_SIZE, shuffle = True, num_workers = 1)
-    # train(net, trainloader, device)
+    train_data = Fruit_Dataset(train = True, watermelon_transform=transform_watermelon, other_transform=transform_others)
+    trainloader = torch.utils.data.DataLoader(train_data, batch_size = BATCH_SIZE, shuffle = True, num_workers = 1)
+    train(net, trainloader, device)
 
-    test_data = Fruit_Dataset(train = False, transform = None)
+    test_data = Fruit_Dataset(train = False)
     testloader = torch.utils.data.DataLoader(test_data, batch_size = BATCH_SIZE, shuffle = False, num_workers = 1)
     test(net, testloader, device)

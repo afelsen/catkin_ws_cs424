@@ -33,14 +33,14 @@ class NavBot:
         self.status = None
 
         self.image_subscriber = rospy.Subscriber('/camera/rgb/image_raw', Image, self.update_image)
-        self.image = None
+        self.image = np.zeros((64,64,3))
 
         rospack = rospkg.RosPack()
         path = rospack.get_path('project3')
         
 
-        model_path = path + "/models/model.py"
-        self.net = CNN(3)
+        model_path = path + "/models/model-1.py"
+        self.net = CNN(2)
 
         # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # print("Device: ", device)
@@ -55,8 +55,9 @@ class NavBot:
 
     def update_image(self, image):
         bridge = CvBridge()
-        cv_image = bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
-        cv_image = cv2.resize(cv_image, (64,64))
+        cv_image_full = bridge.imgmsg_to_cv2(image, desired_encoding='passthrough')
+        cv_image_cropped = cv_image_full[:540, 350:1300]
+        cv_image = cv2.resize(cv_image_cropped, (64,64))
              
         self.image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
 
@@ -79,6 +80,10 @@ class NavBot:
             return True
         else:
             return False
+
+    def continuously_classify(self):
+        while True:
+            self.classify(self.image)
 
     def rotate_and_classify(self, location):
         # rate = rospy.Rate(10)
@@ -113,7 +118,7 @@ class NavBot:
 
 
         angle = 2*math.pi
-        speed = 1
+        speed = .3
 
         self.vel_msg.angular.z = speed
 
@@ -126,15 +131,21 @@ class NavBot:
 
             current_angle = speed*(t1-t0)
             if self.classify(self.image):
-                print (True)
+                self.string_publisher.publish(str("watermelon :::::::::::::::::::::::::::::::::::::::::::"))
+
+                self.vel_msg.angular.z = 0
+                self.velocity_publisher.publish(self.vel_msg)
                 return
+            else:
+                pass
 
         self.vel_msg.angular.z = 0
         self.velocity_publisher.publish(self.vel_msg)
 
-        
-        print (False)
-    
+        self.string_publisher.publish(str("other ==============================================="))
+
+
+            
     def navigation(self):
         target1 = PoseStamped()
         target1.header.frame_id = 'map'
@@ -162,7 +173,7 @@ class NavBot:
         print("awake!")
         time.sleep(2)
 
-        all_targets = [target1, target2, target3]
+        all_targets = [target3, target2, target1]
         for target in all_targets:
             self.string_publisher.publish("testing123")
             self.target_publisher.publish(target)
@@ -182,7 +193,7 @@ class NavBot:
 
 if __name__ == "__main__":
     bot = NavBot()
-
+    # bot.continuously_classify()
     bot.navigation()
 
     
