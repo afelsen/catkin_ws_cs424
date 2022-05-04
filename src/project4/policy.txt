@@ -1,0 +1,9 @@
+pi[r1] = W
+pi[r2] = S
+pi[r3] = S
+pi[r4] = N
+pi[r5] = N
+pi[r6] = N
+pi[r7] = N
+pi[r8] = N
+pi[r9] = N
